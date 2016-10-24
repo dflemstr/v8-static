@@ -10,4 +10,20 @@ script:
   - cd v8
   - gn gen out.gn/build --script-executable=/usr/bin/python2 --args='is_component_build=false is_debug=false is_official_build=true optimize_for_size=true v8_use_snapshot=true v8_use_external_startup_data=false v8_enable_i18n_support=false'
   - ninja -C out.gn/build
+  - cd ..
+  - gzip -k v8/out.gn/build/obj/libv8uber.a
+  - mkdir upload
+  - cp v8/out.gn/build/obj/libv8uber.a.gz upload
+
+deploy:
+  - provider: s3
+    access_key_id: AKIAJE27ZGMR45IXA6OA
+    secret_access_key: ${S3_KEY}
+    bucket: record-query
+    region: eu-west-1
+    skip_cleanup: true
+    local_dir: upload
+    upload-dir: v8
+    on:
+      repo: dflemstr/v8-static
 
