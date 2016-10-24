@@ -21,13 +21,13 @@ script:
   - cd ..
   - mkdir v8-build
   - mkdir v8-build/include
-  - cp -r v8/include/* "v8-build/include"
+  - mv -r v8/include/* "v8-build/include"
   - mkdir v8-build/lib
-  - cp v8/out.gn/build/obj/libv8uber.a v8-build/lib
+  - mv v8/out.gn/build/obj/libv8uber.a v8-build/lib
   - tar -cvzf v8-build.tar.gz v8-build
   - export UPLOAD_DIR=upload/$TARGET/$(cd v8; git describe --tags)
   - mkdir -p "$UPLOAD_DIR"
-  - cp v8-build.tar.gz "$UPLOAD_DIR"
+  - mv v8-build.tar.gz "$UPLOAD_DIR"
 
 deploy:
   - provider: s3
