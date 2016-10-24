@@ -12,8 +12,9 @@ script:
   - ninja -C out.gn/build
   - cd ..
   - gzip -k v8/out.gn/build/obj/libv8uber.a
-  - mkdir upload
-  - cp v8/out.gn/build/obj/libv8uber.a.gz upload
+  - export UPLOAD_DIR=upload/$(uname -m)/$(cd v8; git describe --tags)
+  - mkdir -p "$UPLOAD_DIR"
+  - cp v8/out.gn/build/obj/libv8uber.a.gz "$UPLOAD_DIR"
 
 deploy:
   - provider: s3
