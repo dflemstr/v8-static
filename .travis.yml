@@ -1,0 +1,13 @@
+sudo: true
+dist: trusty
+language: generic
+
+script:
+  - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  - export PATH=`pwd`/depot_tools:"$PATH"
+  - fetch v8
+  - cat extra.gn >> v8/BUILD.gn
+  - cd v8
+  - gn gen out.gn/build --script-executable=/usr/bin/python2 --args='is_component_build=false is_debug=false is_official_build=true optimize_for_size=true v8_use_snapshot=true v8_use_external_startup_data=false v8_enable_i18n_support=false'
+  - ninja -C out.gn/build
+
