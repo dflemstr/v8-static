@@ -17,7 +17,7 @@ script:
   - cat extra.gn >> v8/BUILD.gn
   - cd v8
   - gn gen out.gn/build --script-executable=/usr/bin/python2 --args='is_component_build=false is_debug=false is_official_build=true optimize_for_size=true v8_use_snapshot=true v8_use_external_startup_data=false v8_enable_i18n_support=false'
-  - ninja -C out.gn/build
+  - ninja -C out.gn/build v8uber
   - cd ..
   - mkdir v8-build
   - mkdir v8-build/include
