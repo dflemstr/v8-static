@@ -2,6 +2,14 @@ sudo: true
 dist: trusty
 language: generic
 
+matrix:
+  include:
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-gnu
+    - os: osx
+      osx_image: xcode8
+      env: TARGET=x86_64-apple-darwin
+
 script:
   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
   - export PATH=`pwd`/depot_tools:"$PATH"
@@ -12,7 +20,7 @@ script:
   - ninja -C out.gn/build
   - cd ..
   - gzip -k v8/out.gn/build/obj/libv8uber.a
-  - export UPLOAD_DIR=upload/$(uname -m)/$(cd v8; git describe --tags)
+  - export UPLOAD_DIR=upload/$TARGET/$(cd v8; git describe --tags)
   - mkdir -p "$UPLOAD_DIR"
   - cp v8/out.gn/build/obj/libv8uber.a.gz "$UPLOAD_DIR"
 
