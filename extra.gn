@@ -2,6 +2,7 @@ static_library("v8uber") {
   complete_static_lib = true
   public_deps = [
     ":v8",
+    ":v8_libbase",
   ]
 }
 
