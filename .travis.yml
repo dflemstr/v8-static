@@ -7,7 +7,7 @@ matrix:
     - os: linux
       env: TARGET=x86_64-unknown-linux-gnu
     - os: osx
-      osx_image: xcode7.1
+      osx_image: xcode8
       env: TARGET=x86_64-apple-darwin
 
 script:
@@ -16,7 +16,7 @@ script:
   - fetch v8
   - cat extra.gn >> v8/BUILD.gn
   - cd v8
-  - gn gen out.gn/build --script-executable=/usr/bin/python2 --args='is_component_build=false is_debug=false is_official_build=true optimize_for_size=true v8_use_snapshot=true v8_use_external_startup_data=false v8_enable_i18n_support=true'
+  - gn gen out.gn/build --args='is_component_build=false is_debug=false is_official_build=true optimize_for_size=true v8_use_snapshot=true v8_use_external_startup_data=false v8_enable_i18n_support=true'
   - ninja -C out.gn/build v8uber d8
   - cd ..
   - mkdir v8-build
