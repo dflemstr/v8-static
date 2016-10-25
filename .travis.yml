@@ -21,7 +21,7 @@ script:
   - cd ..
   - mkdir v8-build
   - mkdir v8-build/include
-  - mv -r v8/include/* "v8-build/include"
+  - mv v8/include/* "v8-build/include"
   - mkdir v8-build/lib
   - mv v8/out.gn/build/obj/libv8uber.a v8-build/lib
   - tar -cvzf v8-build.tar.gz v8-build
