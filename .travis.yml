@@ -41,13 +41,14 @@ matrix:
           packages:
             - binutils-arm-linux-gnueabihf
             - gcc-arm-linux-gnueabihf
+            - gcc-4.8-multilib-arm-linux-gnueabihf
             - g++-arm-linux-gnueabihf
+            - g++-4.8-multilib-arm-linux-gnueabihf
             - libc6-dev-armhf-cross
             - libstdc++6-armhf-cross
             # For building snapshots, a 32-bit host compiler is needed
-            - linux-libc-dev
-            - libc6-dev-i386
-            - lib32stdc++-4.8-dev
+            - gcc-multilib
+            - g++-multilib
     - os: linux
       env: >
         TARGET=armv7-unknown-linux-musleabihf
