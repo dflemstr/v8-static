@@ -1,65 +1,46 @@
+language: generic
+
 sudo: true
 dist: trusty
-language: generic
+
+services:
+  - docker
 
 matrix:
   include:
     - os: linux
       env: >
         TARGET=x86_64-unknown-linux-gnu
+        DOCKCROSS=dockcross/linux-x64
         GN_ARGS='target_os="linux" target_cpu="x64"'
     - os: linux
       env: >
         TARGET=x86_64-unknown-linux-musl
+        DOCKCROSS=dockcross/linux-x64
         MUSL=x86_64-linux-musl
         GN_ARGS='target_os="linux" target_cpu="x64" custom_toolchain="//build/toolchain/linux:x64_musl" v8_snapshot_toolchain="//build/toolchain/linux:x64"'
     - os: linux
       env: >
         TARGET=i686-unknown-linux-gnu
+        DOCKCROSS=dockcross/linux-x86
         GN_ARGS='target_os="linux" target_cpu="x86"'
-      addons:
-        apt:
-          packages:
-            - gcc-multilib
-            - g++-multilib
     - os: linux
       env: >
         TARGET=i686-unknown-linux-musl
+        DOCKCROSS=dockcross/linux-x86
         MUSL=x86_64-x32-linux-musl
         GN_ARGS='target_os="linux" target_cpu="x86" custom_toolchain="//build/toolchain/linux:x86_musl"'
-      addons:
-        apt:
-          packages:
-            - gcc-multilib
-            - g++-multilib
     - os: linux
       env: >
         TARGET=armv7-unknown-linux-gnueabihf
+        DOCKCROSS=dockcross/linux-armv7
         GN_ARGS='target_os="linux" target_cpu="arm" arm_version=7 arm_float_abi="hard"'
-      addons:
-        apt:
-          packages:
-            - binutils-arm-linux-gnueabihf
-            - gcc-arm-linux-gnueabihf
-            - gcc-4.8-multilib-arm-linux-gnueabihf
-            - g++-arm-linux-gnueabihf
-            - g++-4.8-multilib-arm-linux-gnueabihf
-            - libc6-dev-armhf-cross
-            - libstdc++6-armhf-cross
-            # For building snapshots, a 32-bit host compiler is needed
-            - gcc-multilib
-            - g++-multilib
     - os: linux
       env: >
         TARGET=armv7-unknown-linux-musleabihf
+        DOCKCROSS=dockcross/linux-armv7
         MUSL=arm-linux-musleabihf
         GN_ARGS='target_os="linux" target_cpu="arm" arm_version=7 arm_float_abi="hard" custom_toolchain="//build/toolchain/linux:arm_musl"'
-      addons:
-        apt:
-          packages:
-            # For building snapshots, a 32-bit host compiler is needed
-            - gcc-multilib
-            - g++-multilib
     - os: osx
       osx_image: xcode8
       env: >
@@ -80,6 +61,14 @@ install:
       tar xaf "$musl_archive"
       mv "$MUSL" musl
     fi
+  - |
+    if [ -n "$DOCKCROSS" ]
+    then
+      docker run --rm "$DOCKCROSS" > ~/cross
+    else
+      echo -e '#!/bin/sh\nexec "$@"' > ~/cross
+    fi
+    chmod +x ~/cross
 
 script:
   - set -e
@@ -92,8 +81,8 @@ script:
   - cat ../extra.gn >> BUILD.gn
   - cat ../extra-toolchain-linux.gn >> build/toolchain/linux/BUILD.gn
   - gn gen out/build --args="is_component_build=false is_debug=false is_official_build=true optimize_for_size=true v8_use_snapshot=true v8_use_external_startup_data=false v8_enable_i18n_support=true is_clang=false use_sysroot=false $GN_ARGS"
-  - ninja -C out/build v8uber
   - cd ..
+  - ~/cross ninja -C v8/out/build v8uber
   - mkdir v8-build
   - mkdir v8-build/include
   - mv v8/include/* "v8-build/include"
