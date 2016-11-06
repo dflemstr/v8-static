@@ -5,27 +5,100 @@ language: generic
 matrix:
   include:
     - os: linux
-      env: TARGET=x86_64-unknown-linux-gnu
+      env: >
+        TARGET=x86_64-unknown-linux-gnu
+        GN_ARGS='target_os="linux" target_cpu="x64"'
+    - os: linux
+      env: >
+        TARGET=x86_64-unknown-linux-musl
+        MUSL=x86_64-linux-musl
+        GN_ARGS='target_os="linux" target_cpu="x64" custom_toolchain="//build/toolchain/linux:x64_musl" v8_snapshot_toolchain="//build/toolchain/linux:x64"'
+    - os: linux
+      env: >
+        TARGET=i686-unknown-linux-gnu
+        GN_ARGS='target_os="linux" target_cpu="x86"'
+      addons:
+        apt:
+          packages:
+            - gcc-multilib
+            - g++-multilib
+    - os: linux
+      env: >
+        TARGET=i686-unknown-linux-musl
+        MUSL=x86_64-x32-linux-musl
+        GN_ARGS='target_os="linux" target_cpu="x86" custom_toolchain="//build/toolchain/linux:x86_musl"'
+      addons:
+        apt:
+          packages:
+            - gcc-multilib
+            - g++-multilib
+    - os: linux
+      env: >
+        TARGET=armv7-unknown-linux-gnueabihf
+        GN_ARGS='target_os="linux" target_cpu="arm" arm_version=7 arm_float_abi="hard"'
+      addons:
+        apt:
+          packages:
+            - binutils-arm-linux-gnueabihf
+            - gcc-arm-linux-gnueabihf
+            - g++-arm-linux-gnueabihf
+            - libc6-dev-armhf-cross
+            - libstdc++6-armhf-cross
+            # For building snapshots, a 32-bit host compiler is needed
+            - linux-libc-dev
+            - libc6-dev-i386
+            - lib32stdc++-4.8-dev
+    - os: linux
+      env: >
+        TARGET=armv7-unknown-linux-musleabihf
+        MUSL=arm-linux-musleabihf
+        GN_ARGS='target_os="linux" target_cpu="arm" arm_version=7 arm_float_abi="hard" custom_toolchain="//build/toolchain/linux:arm_musl"'
+      addons:
+        apt:
+          packages:
+            # For building snapshots, a 32-bit host compiler is needed
+            - gcc-multilib
+            - g++-multilib
     - os: osx
       osx_image: xcode8
-      env: TARGET=x86_64-apple-darwin
+      env: >
+        TARGET=x86_64-apple-darwin
+        GN_ARGS='target_os="mac" target_cpu="x64"'
+    - os: osx
+      osx_image: xcode8
+      env: >
+        TARGET=i686-apple-darwin
+        GN_ARGS='target_os="mac" target_cpu="x86"'
+
+install:
+  - |
+    if [ -n "$MUSL" ]
+    then
+      musl_archive="crossx86-$MUSL-1.1.12.tar.xz"
+      wget "https://s3-eu-west-1.amazonaws.com/record-query/musl-cross-compilers/musl-1.1.12/$musl_archive"
+      tar xaf "$musl_archive"
+      mv "$MUSL" musl
+    fi
 
 script:
+  - set -e
+  - if [ -n "$MUSL" ]; then export PATH="$PWD/musl/bin:$PATH"; fi
   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
   - export PATH=`pwd`/depot_tools:"$PATH"
   - fetch v8
   - cat extra.gn >> v8/BUILD.gn
+  - cat extra-toolchain-linux.gn >> v8/build/toolchain/linux/BUILD.gn
   - cd v8
-  - gn gen out.gn/build --args='is_component_build=false is_debug=false is_official_build=true optimize_for_size=true v8_use_snapshot=true v8_use_external_startup_data=false v8_enable_i18n_support=true'
-  - ninja -C out.gn/build v8uber d8
+  - gn gen out/build --args="is_component_build=false is_debug=false is_official_build=true optimize_for_size=true v8_use_snapshot=true v8_use_external_startup_data=false v8_enable_i18n_support=true is_clang=false use_sysroot=false $GN_ARGS"
+  - ninja -C out/build v8uber d8
   - cd ..
   - mkdir v8-build
   - mkdir v8-build/include
   - mv v8/include/* "v8-build/include"
   - mkdir v8-build/lib
-  - mv v8/out.gn/build/obj/libv8uber.a v8-build/lib
+  - mv v8/out/build/obj/libv8uber.a v8-build/lib
   - tar -cvzf v8-build.tar.gz v8-build
-  - export UPLOAD_DIR=upload/$TARGET/$(v8/out.gn/build/d8 -e "var v = version(); print(v.substring(0, v.indexOf(' ')))")-$(cat v8/.git/HEAD)
+  - export UPLOAD_DIR=upload/$TARGET/$(v8/out/build/d8 -e "var v = version(); print(v.substring(0, v.indexOf(' ')))")-$(cat v8/.git/HEAD)
   - mkdir -p "$UPLOAD_DIR"
   - mv v8-build.tar.gz "$UPLOAD_DIR"
 
@@ -40,4 +113,3 @@ deploy:
     upload-dir: v8
     on:
       repo: dflemstr/v8-static
-

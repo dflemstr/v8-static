@@ -5,4 +5,3 @@ static_library("v8uber") {
     ":v8_libbase",
   ]
 }
-
