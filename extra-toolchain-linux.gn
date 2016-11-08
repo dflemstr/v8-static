@@ -1,5 +1,5 @@
-gcc_toolchain("arm_musl") {
-  toolprefix = "arm-linux-musleabihf-"
+gcc_toolchain("arm-unknown-linux-gnueabi") {
+  toolprefix = "arm-unknown-linux-gnueabi-"
 
   cc = "${toolprefix}gcc"
   cxx = "${toolprefix}g++"
@@ -16,8 +16,98 @@ gcc_toolchain("arm_musl") {
   }
 }
 
-gcc_toolchain("x86_musl") {
-  toolprefix = "x86_64-x32-linux-musl-"
+gcc_toolchain("arm-unknown-linux-gnueabihf") {
+  toolprefix = "arm-unknown-linux-gnueabihf-"
+
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+
+  ar = "${toolprefix}ar"
+  ld = cxx
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+
+  toolchain_args = {
+    current_cpu = "arm"
+    current_os = "linux"
+    is_clang = false
+  }
+}
+
+gcc_toolchain("arm-unknown-linux-musleabi") {
+  toolprefix = "arm-unknown-linux-musleabi-"
+
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+
+  ar = "${toolprefix}ar"
+  ld = cxx
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+
+  toolchain_args = {
+    current_cpu = "arm"
+    current_os = "linux"
+    is_clang = false
+  }
+}
+
+gcc_toolchain("arm-unknown-linux-musleabihf") {
+  toolprefix = "arm-unknown-linux-musleabihf-"
+
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+
+  ar = "${toolprefix}ar"
+  ld = cxx
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+
+  toolchain_args = {
+    current_cpu = "arm"
+    current_os = "linux"
+    is_clang = false
+  }
+}
+
+gcc_toolchain("arm7-unknown-linux-gnueabihf") {
+  toolprefix = "arm7-unknown-linux-gnueabihf-"
+
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+
+  ar = "${toolprefix}ar"
+  ld = cxx
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+
+  toolchain_args = {
+    current_cpu = "arm"
+    current_os = "linux"
+    is_clang = false
+  }
+}
+
+gcc_toolchain("arm7-unknown-linux-musleabihf") {
+  toolprefix = "arm7-unknown-linux-musleabihf-"
+
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+
+  ar = "${toolprefix}ar"
+  ld = cxx
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+
+  toolchain_args = {
+    current_cpu = "arm"
+    current_os = "linux"
+    is_clang = false
+  }
+}
+
+gcc_toolchain("i686-unknown-linux-gnu") {
+  toolprefix = "i686-unknown-linux-gnu-"
 
   cc = "${toolprefix}gcc"
   cxx = "${toolprefix}g++"
@@ -34,8 +124,44 @@ gcc_toolchain("x86_musl") {
   }
 }
 
-gcc_toolchain("x64_musl") {
-  toolprefix = "x86_64-linux-musl-"
+gcc_toolchain("i686-unknown-linux-musl") {
+  toolprefix = "i686-unknown-linux-musl-"
+
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+
+  ar = "${toolprefix}ar"
+  ld = cxx
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+
+  toolchain_args = {
+    current_cpu = "x86"
+    current_os = "linux"
+    is_clang = false
+  }
+}
+
+gcc_toolchain("x86_64-unknown-linux-gnu") {
+  toolprefix = "x86_64-unknown-linux-gnu-"
+
+  cc = "${toolprefix}gcc"
+  cxx = "${toolprefix}g++"
+
+  ar = "${toolprefix}ar"
+  ld = cxx
+  readelf = "${toolprefix}readelf"
+  nm = "${toolprefix}nm"
+
+  toolchain_args = {
+    current_cpu = "x64"
+    current_os = "linux"
+    is_clang = false
+  }
+}
+
+gcc_toolchain("x86_64-unknown-linux-musl") {
+  toolprefix = "x86_64-unknown-linux-musl-"
 
   cc = "${toolprefix}gcc"
   cxx = "${toolprefix}g++"

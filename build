@@ -1,0 +1,105 @@
+#!/bin/bash -eux
+
+srcdir=$PWD
+
+mkdir -p target
+cd target
+
+fetch-depot-tools() {
+    virtualenv -p /usr/bin/python2 -q venv
+    set +u
+    source venv/bin/activate > /dev/null
+    set -u
+
+    if [ ! -d depot_tools ]
+    then git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+    else (cd depot_tools; git pull)
+    fi
+
+    PATH=$(pwd)/depot_tools:"$PATH"
+    export PATH
+}
+
+fetch-v8() {
+    if [ ! -d v8 ]
+    then
+        fetch v8
+
+        pushd v8
+        gclient sync --revision 5.6.222
+        cat "$srcdir/extra.gn" >> BUILD.gn
+        cat "$srcdir/extra-toolchain-linux.gn" >> build/toolchain/linux/BUILD.gn
+        popd
+    fi
+}
+
+run-docker() {
+    docker pull "dflemstr/buildenv:$TARGET"
+    exec docker run \
+         --rm -ti \
+         --entrypoint /bin/bash \
+         -v "$srcdir:$srcdir" \
+         -e "TARGET=$TARGET" \
+         -e "USE_DOCKER=false" \
+         -e "IN_DOCKER=true" \
+         "dflemstr/buildenv:$TARGET" \
+         -c "useradd -u $(id -u) -g $(id -g) -M $USER &&
+             echo '$USER ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
+             cd $srcdir &&
+             sudo -HEu $USER ./build"
+}
+
+run-gn() {
+    default_gn_args=(
+        'is_component_build=false'
+        'is_debug=false'
+        'is_official_build=true'
+        'optimize_for_size=true'
+        'v8_use_snapshot=true'
+        'v8_use_external_startup_data=false'
+        'v8_enable_i18n_support=true'
+        'is_clang=false'
+        'use_sysroot=false'
+    )
+    pushd v8
+    gn gen "out/$TARGET" --args="${default_gn_args[*]} $(cat "$srcdir/args/$TARGET.args")"
+    popd
+}
+
+build-v8() {
+    ninja -C "v8/out/$TARGET" v8uber
+}
+
+prepare-upload() {
+    rm -rf v8-build
+    mkdir v8-build
+    mkdir v8-build/include
+    mv v8/include/* "v8-build/include"
+    mkdir v8-build/lib
+    mv "v8/out/$TARGET/obj/libv8uber.a" v8-build/lib
+    tar -cvzf v8-build.tar.gz v8-build
+    UPLOAD_DIR=upload/$TARGET/$(cd v8; git describe --always --tags)
+    mkdir -p "$UPLOAD_DIR"
+    mv v8-build.tar.gz "$UPLOAD_DIR"
+}
+
+if [ "${IN_DOCKER:-false}" = true ]
+then
+    sudo apt-get update
+    sudo apt-get install -y \
+         git python-pip python-dev build-essential \
+         libglib2.0-dev gcc-multilib g++-multilib
+    sudo rm -rf /var/lib/apt/lists/*
+    sudo pip install virtualenv
+fi
+
+if [ "${USE_DOCKER:-false}" = true ]
+then
+    run-docker
+fi
+
+fetch-depot-tools
+fetch-v8
+run-gn
+build-v8
+prepare-upload

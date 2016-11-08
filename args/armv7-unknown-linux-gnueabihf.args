@@ -1,0 +1,5 @@
+target_os="linux"
+target_cpu="arm"
+arm_version=7
+arm_float_abi="hard"
+custom_toolchain="//build/toolchain/linux:armv7-unknown-linux-gnueabihf"
