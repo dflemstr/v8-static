@@ -35,14 +35,19 @@ run-docker() {
     exec docker run \
          --rm -ti \
          --entrypoint /bin/bash \
+         -u root \
          -v "$srcdir:/host" \
          -e "TARGET=$TARGET" \
          -e "USE_DOCKER=false" \
          -e "IN_DOCKER=true" \
          "dflemstr/buildenv:$TARGET" \
-         -c "if ! getent group $(id -gn); then groupadd -g $(id -g) $(id -gn); fi &&
-             if ! getent passwd $(id -un); then useradd -u $(id -u) -g $(id -g) -m $(id -un); fi &&
-             echo '$(id -un) ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
+         -c "if ! getent group $(id -gn)
+             then groupadd -g $(id -g) $(id -gn)
+             fi &&
+             if ! getent passwd $(id -un)
+             then useradd -u $(id -u) -g $(id -g) -m $(id -un)
+             fi &&
+             adduser $(id -un) sudo &&
              cd /host &&
              sudo -HEu $(id -un) ./build"
 }
@@ -80,14 +85,6 @@ prepare-upload() {
     mkdir -p "$UPLOAD_DIR"
     mv v8-build.tar.gz "$UPLOAD_DIR"
 }
-
-if [ "${IN_DOCKER:-false}" = true ]
-then
-    sudo apt-get update
-    sudo apt-get install -y \
-         git python build-essential libglib2.0-dev gcc-multilib g++-multilib
-    sudo rm -rf /var/lib/apt/lists/*
-fi
 
 if [ "${USE_DOCKER:-false}" = true ]
 then
