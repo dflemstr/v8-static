@@ -16,29 +16,15 @@ fetch-depot-tools() {
 }
 
 fetch-v8() {
-    if [ -d v8 ]
+    if [ ! -d v8 ]
     then
-        pushd v8
-
-        if [ -f BUILD.gn.orig ]
-        then mv BUILD.gn.orig BUILD.gn
-        fi
-
-        if [ -f build/toolchain/linux/BUILD.gn.orig ]
-        then mv build/toolchain/linux/BUILD.gn.orig build/toolchain/linux/BUILD.gn
-        fi
-
-        popd
-    else
         fetch v8
     fi
 
     pushd v8
-    gclient sync --revision 5.6.222
+    gclient sync --reset --with_branch_heads --with_tags --revision 5.6.222
 
-    cp BUILD.gn BUILD.gn.orig
     cat "$srcdir/extra.gn" >> BUILD.gn
-    cp build/toolchain/linux/BUILD.gn build/toolchain/linux/BUILD.gn.orig
     cat "$srcdir/extra-toolchain-linux.gn" >> build/toolchain/linux/BUILD.gn
 
     popd
@@ -74,7 +60,7 @@ run-gn() {
         'use_sysroot=false'
     )
     pushd v8
-    gn gen "out/$TARGET" --args="${default_gn_args[*]} $(cat "$srcdir/args/$TARGET.args")"
+    gn gen "out/$TARGET" --args="$(printf '%s\n' "${default_gn_args[@]}") $(cat "$srcdir/args/$TARGET.args")"
     popd
 }
 
