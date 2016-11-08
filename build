@@ -6,14 +6,9 @@ mkdir -p target
 cd target
 
 fetch-depot-tools() {
-    virtualenv -p /usr/bin/python2 -q venv
-    set +u
-    source venv/bin/activate > /dev/null
-    set -u
-
-    if [ ! -d depot_tools ]
-    then git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-    else (cd depot_tools; git pull)
+    if [ -d depot_tools ]
+    then (cd depot_tools; git pull)
+    else git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
     fi
 
     PATH=$(pwd)/depot_tools:"$PATH"
@@ -21,16 +16,25 @@ fetch-depot-tools() {
 }
 
 fetch-v8() {
-    if [ ! -d v8 ]
+    if [ -d v8 ]
     then
-        fetch v8
-
         pushd v8
-        gclient sync --revision 5.6.222
-        cat "$srcdir/extra.gn" >> BUILD.gn
-        cat "$srcdir/extra-toolchain-linux.gn" >> build/toolchain/linux/BUILD.gn
+        mv BUILD.gn.orig BUILD.gn
+        mv build/toolchain/linux/BUILD.gn.orig build/toolchain/linux/BUILD.gn
         popd
+    else
+        fetch v8
     fi
+
+    pushd v8
+    gclient sync --revision 5.6.222
+
+    cp BUILD.gn BUILD.gn.orig
+    cat "$srcdir/extra.gn" >> BUILD.gn
+    cp build/toolchain/linux/BUILD.gn build/toolchain/linux/BUILD.gn.orig
+    cat "$srcdir/extra-toolchain-linux.gn" >> build/toolchain/linux/BUILD.gn
+
+    popd
 }
 
 run-docker() {
@@ -88,10 +92,8 @@ if [ "${IN_DOCKER:-false}" = true ]
 then
     sudo apt-get update
     sudo apt-get install -y \
-         git python-pip python-dev build-essential \
-         libglib2.0-dev gcc-multilib g++-multilib
+         git python libglib2.0-dev gcc-multilib g++-multilib
     sudo rm -rf /var/lib/apt/lists/*
-    sudo pip install virtualenv
 fi
 
 if [ "${USE_DOCKER:-false}" = true ]
