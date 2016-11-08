@@ -43,7 +43,8 @@ run-docker() {
          -e "USE_DOCKER=false" \
          -e "IN_DOCKER=true" \
          "dflemstr/buildenv:$TARGET" \
-         -c "useradd -u $(id -u) -g $(id -g) -M $USER &&
+         -c "groupadd -g $(id -g) $(id -gn) &&
+             useradd -u $(id -u) -g $(id -g) -M $USER &&
              echo '$USER ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
              cd $srcdir &&
              sudo -HEu $USER ./build"
