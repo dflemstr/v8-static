@@ -19,8 +19,15 @@ fetch-v8() {
     if [ -d v8 ]
     then
         pushd v8
-        mv BUILD.gn.orig BUILD.gn
-        mv build/toolchain/linux/BUILD.gn.orig build/toolchain/linux/BUILD.gn
+
+        if [ -f BUILD.gn.orig ]
+        then mv BUILD.gn.orig BUILD.gn
+        fi
+
+        if [ -f build/toolchain/linux/BUILD.gn.orig ]
+        then mv build/toolchain/linux/BUILD.gn.orig build/toolchain/linux/BUILD.gn
+        fi
+
         popd
     else
         fetch v8
