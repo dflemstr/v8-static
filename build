@@ -11,7 +11,7 @@ fetch-depot-tools() {
     else git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
     fi
 
-    PATH=$(pwd)/depot_tools:"$PATH"
+    PATH=$PWD/depot_tools:$PATH
     export PATH
 }
 
@@ -54,11 +54,11 @@ run-docker() {
          -e "USE_DOCKER=false" \
          -e "IN_DOCKER=true" \
          "dflemstr/buildenv:$TARGET" \
-         -c "groupadd -g $(id -g) $(id -gn) &&
-             useradd -u $(id -u) -g $(id -g) -M $USER &&
-             echo '$USER ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
+         -c "if ! getent group $(id -gn); then groupadd -g $(id -g) $(id -gn); fi &&
+             if ! getent passwd $(id -un); then useradd -u $(id -u) -g $(id -g) -m $(id -un); fi &&
+             echo '$(id -un) ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
              cd $srcdir &&
-             sudo -HEu $USER ./build"
+             sudo -HEu $(id -un) ./build"
 }
 
 run-gn() {
@@ -99,7 +99,7 @@ if [ "${IN_DOCKER:-false}" = true ]
 then
     sudo apt-get update
     sudo apt-get install -y \
-         git python libglib2.0-dev gcc-multilib g++-multilib
+         git python build-essential libglib2.0-dev gcc-multilib g++-multilib
     sudo rm -rf /var/lib/apt/lists/*
 fi
 
