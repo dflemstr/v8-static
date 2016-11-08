@@ -49,7 +49,7 @@ run-docker() {
     exec docker run \
          --rm -ti \
          --entrypoint /bin/bash \
-         -v "$srcdir:$srcdir" \
+         -v "$srcdir:/host" \
          -e "TARGET=$TARGET" \
          -e "USE_DOCKER=false" \
          -e "IN_DOCKER=true" \
@@ -57,7 +57,7 @@ run-docker() {
          -c "if ! getent group $(id -gn); then groupadd -g $(id -g) $(id -gn); fi &&
              if ! getent passwd $(id -un); then useradd -u $(id -u) -g $(id -g) -m $(id -un); fi &&
              echo '$(id -un) ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers &&
-             cd $srcdir &&
+             cd /host &&
              sudo -HEu $(id -un) ./build"
 }
 
