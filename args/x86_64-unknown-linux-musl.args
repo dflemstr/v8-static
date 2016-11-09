@@ -1,3 +1,4 @@
 target_os="linux"
 target_cpu="x64"
 custom_toolchain="//build/toolchain/linux:x86_64-unknown-linux-musl"
+v8_snapshot_toolchain="//build/toolchain/linux:x64"
