@@ -7,49 +7,17 @@ services:
 
 matrix:
   include:
-    - os: linux
-      env: >
-        TARGET=x86_64-unknown-linux-gnu
-        GN_ARGS='target_os="linux" target_cpu="x64"'
-        USE_DOCKER=true
-    - os: linux
-      env: >
-        TARGET=x86_64-unknown-linux-musl
-        GN_ARGS='target_os="linux" target_cpu="x64" custom_toolchain="//build/toolchain/linux:x64_musl" v8_snapshot_toolchain="//build/toolchain/linux:x64"'
-        USE_DOCKER=true
-    - os: linux
-      env: >
-        TARGET=i686-unknown-linux-gnu
-        GN_ARGS='target_os="linux" target_cpu="x86"'
-        USE_DOCKER=true
-    - os: linux
-      env: >
-        TARGET=i686-unknown-linux-musl
-        GN_ARGS='target_os="linux" target_cpu="x86" custom_toolchain="//build/toolchain/linux:x86_musl" v8_snapshot_toolchain="//build/toolchain/linux:x86"'
-        USE_DOCKER=true
-    - os: linux
-      env: >
-        TARGET=armv7-unknown-linux-gnueabihf
-        GN_ARGS='target_os="linux" target_cpu="arm" arm_version=7 arm_float_abi="hard"'
-        USE_DOCKER=true
-    - os: linux
-      env: >
-        TARGET=armv7-unknown-linux-musleabihf
-        GN_ARGS='target_os="linux" target_cpu="arm" arm_version=7 arm_float_abi="hard" custom_toolchain="//build/toolchain/linux:arm_musl" v8_snapshot_toolchain="//build/toolchain/linux:x86"'
-        USE_DOCKER=true
     - os: osx
       osx_image: xcode8
       env: >
         TARGET=x86_64-apple-darwin
-        GN_ARGS='target_os="mac" target_cpu="x64"'
     - os: osx
       osx_image: xcode8
       env: >
         TARGET=i686-apple-darwin
-        GN_ARGS='target_os="mac" target_cpu="x86"'
 
 script:
-  - set -e
+  - ./build
 
 deploy:
   - provider: s3

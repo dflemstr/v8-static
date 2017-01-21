@@ -1,19 +1,10 @@
-TARGETS := \
-	arm-unknown-linux-gnueabi \
-	arm-unknown-linux-gnueabihf \
-	arm-unknown-linux-musleabi \
-	arm-unknown-linux-musleabihf \
-	armv7-unknown-linux-gnueabihf \
-	armv7-unknown-linux-musleabihf \
-	i686-unknown-linux-gnu \
-	i686-unknown-linux-musl \
-	x86_64-unknown-linux-gnu \
-	x86_64-unknown-linux-musl
+ARGS := $(wildcard args/*.args)
 
 .DEFAULT: all
 
-all: $(addsuffix .target,$(TARGETS))
+all: $(addprefix .target/,$(addsuffix .build,$(ARGS:args/%.args=%)))
 
-%.target: args/%.args
-	TARGET=$(@:.target=) USE_DOCKER=true ./build
+.target/%.build: args/%.args
+	TARGET=$(@:.target/%.build=%) USE_DOCKER=true ./build
+	mkdir -p .target
 	touch $(@)

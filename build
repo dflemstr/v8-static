@@ -1,6 +1,7 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 
 srcdir=$PWD
+v8_revision=5.8.300
 
 mkdir -p target
 cd target
@@ -22,34 +23,41 @@ fetch-v8() {
     fi
 
     pushd v8
-    gclient sync --reset --with_branch_heads --with_tags --revision 5.6.222
+    gclient sync --reset --with_branch_heads --with_tags --revision "$v8_revision"
 
     cat "$srcdir/extra.gn" >> BUILD.gn
-    cat "$srcdir/extra-toolchain-linux.gn" >> build/toolchain/linux/BUILD.gn
 
     popd
 }
 
 run-docker() {
-    docker pull "dflemstr/buildenv:$TARGET"
+    mkdir -p docker
+    local dockerfile dockerimage
+    dockerfile=docker/Dockerfile.$TARGET
+    dockerimage=v8-static-build:$TARGET
+    un=$(id -un)
+    gn=$(id -gn)
+    u=$(id -u)
+    g=$(id -g)
+
+    cat >"$dockerfile" <<EOF
+FROM dflemstr/rust-buildenv:$TARGET
+RUN if ! getent group $gn; then groupadd -g $g $gn; fi && \
+    if ! getent passwd $un; then useradd -u $u -g $g -m $un; fi && \
+    echo '%sudo ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers && \
+    adduser $un sudo
+EOF
+    docker build -f "$dockerfile" -t "$dockerimage" docker
     exec docker run \
          --rm -ti \
          --entrypoint /bin/bash \
          -u root \
-         -v "$srcdir:/host" \
+         -v "$srcdir:/build/$TARGET" \
          -e "TARGET=$TARGET" \
          -e "USE_DOCKER=false" \
          -e "IN_DOCKER=true" \
-         "dflemstr/buildenv:$TARGET" \
-         -c "if ! getent group $(id -gn)
-             then groupadd -g $(id -g) $(id -gn)
-             fi &&
-             if ! getent passwd $(id -un)
-             then useradd -u $(id -u) -g $(id -g) -m $(id -un)
-             fi &&
-             adduser $(id -un) sudo &&
-             cd /host &&
-             sudo -HEu $(id -un) ./build"
+         "$dockerimage" \
+         -c "cd /build/$TARGET && sudo -HEu $un ./build"
 }
 
 run-gn() {
@@ -58,14 +66,17 @@ run-gn() {
         'is_debug=false'
         'is_official_build=true'
         'optimize_for_size=true'
+        'clang_base_path="/usr/lib/llvm-5.0/"'
+        'clang_use_chrome_plugins=false'
         'v8_use_snapshot=true'
         'v8_use_external_startup_data=false'
         'v8_enable_i18n_support=true'
-        'is_clang=false'
         'use_sysroot=false'
+        'enable_nacl=false'
     )
     pushd v8
-    gn gen "out/$TARGET" --args="$(printf '%s\n' "${default_gn_args[@]}") $(cat "$srcdir/args/$TARGET.args")"
+    gn gen "out/$TARGET" --args="$(printf '%s\n' "${default_gn_args[@]}")
+$(cat "$srcdir/args/$TARGET.args")"
     popd
 }
 

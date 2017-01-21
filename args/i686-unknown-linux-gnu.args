@@ -1,3 +1,2 @@
 target_os="linux"
 target_cpu="x86"
-custom_toolchain="//build/toolchain/linux:i686-unknown-linux-gnu"
