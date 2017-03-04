@@ -26,7 +26,7 @@ deploy:
     bucket: record-query
     region: eu-west-1
     skip_cleanup: true
-    local_dir: upload
+    local_dir: target/upload
     upload-dir: v8
     on:
       repo: dflemstr/v8-static
