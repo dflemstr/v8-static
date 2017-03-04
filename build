@@ -61,19 +61,34 @@ EOF
 }
 
 run-gn() {
-    default_gn_args=(
-        'is_component_build=false'
-        'is_debug=false'
-        'is_official_build=true'
-        'optimize_for_size=true'
-        'clang_base_path="/usr/lib/llvm-5.0/"'
-        'clang_use_chrome_plugins=false'
-        'v8_use_snapshot=true'
-        'v8_use_external_startup_data=false'
-        'v8_enable_i18n_support=true'
-        'use_sysroot=false'
-        'enable_nacl=false'
-    )
+    if [[ "$TARGET" =~ darwin ]]
+    then
+        default_gn_args=(
+            'is_component_build=false'
+            'is_debug=false'
+            'is_official_build=true'
+            'optimize_for_size=true'
+            'v8_use_snapshot=true'
+            'v8_use_external_startup_data=false'
+            'v8_enable_i18n_support=true'
+            'use_sysroot=false'
+            'enable_nacl=false'
+        )
+    else
+        default_gn_args=(
+            'is_component_build=false'
+            'is_debug=false'
+            'is_official_build=true'
+            'optimize_for_size=true'
+            'clang_base_path="/usr/lib/llvm-5.0/"'
+            'clang_use_chrome_plugins=false'
+            'v8_use_snapshot=true'
+            'v8_use_external_startup_data=false'
+            'v8_enable_i18n_support=true'
+            'use_sysroot=false'
+            'enable_nacl=false'
+        )
+    fi
     pushd v8
     gn gen "out/$TARGET" --args="$(printf '%s\n' "${default_gn_args[@]}")
 $(cat "$srcdir/args/$TARGET.args")"
