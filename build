@@ -80,7 +80,7 @@ run-gn() {
             'is_debug=false'
             'is_official_build=true'
             'optimize_for_size=true'
-            'clang_base_path="/usr/lib/llvm-4.0/"'
+            'clang_base_path="/usr/lib/llvm-5.0/"'
             'clang_use_chrome_plugins=false'
             'v8_use_snapshot=true'
             'v8_use_external_startup_data=false'
