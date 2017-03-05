@@ -1,7 +1,7 @@
 #!/bin/bash -eux
 
 srcdir=$PWD
-v8_revision=5.8.300
+v8_revision=5.7.441.1
 
 mkdir -p target
 cd target
@@ -82,6 +82,7 @@ run-gn() {
             'optimize_for_size=true'
             'clang_base_path="/usr/lib/llvm-5.0/"'
             'clang_use_chrome_plugins=false'
+            'treat_warnings_as_errors=false'
             'v8_use_snapshot=true'
             'v8_use_external_startup_data=false'
             'v8_enable_i18n_support=true'
