@@ -79,7 +79,6 @@ run-gn() {
             'is_component_build=false'
             'is_debug=false'
             'is_official_build=true'
-            'optimize_for_size=true'
             'clang_base_path="/usr/lib/llvm-5.0/"'
             'clang_use_chrome_plugins=false'
             'treat_warnings_as_errors=false'
